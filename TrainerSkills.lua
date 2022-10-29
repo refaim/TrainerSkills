@@ -1777,7 +1777,7 @@ function TrainerSkills_SetSelection(id)
 			for skillType in ReagentData['crafted'][skillLine] do
 				if(skillType == serviceName) then
 					for key, value in ReagentData['crafted'][skillLine][skillType]['reagents'] do
-						skillReagents = skillReagents..key..'('..value..') ';
+						skillReagents = skillReagents..key..' ('..value..') ';
 					end
 					break;
 				end
