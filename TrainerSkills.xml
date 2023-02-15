@@ -2,7 +2,8 @@
 ..\FrameXML\UI.xsd">
 	<Script file="localization.lua"/>
 	<Script file="localization.fr.lua" /> 
-  	<Script file="localization.de.lua" /> 
+	<Script file="localization.de.lua" /> 
+	<Script file="localization.ru.lua" /> 
 	<Script file="TrainerSkills.lua"/>
 	<Button name="TrainerSkillsSkillButtonTemplate" hidden="true" virtual="true">
 		<Size>
