@@ -3,6 +3,7 @@
 ## Author: Razzer
 ## Version: 2.1.6
 ## Notes: Shows the trainer frame from annywhere
+## Notes-ruRU: Показывает окно учителя из любого места
 ## eMail: trainerskills@pchjaelp.dk
 ## URL: http://wow.pchjaelp.dk
 ## OptionalDeps: myAddOns,Titan Panel,Reagent Data
