@@ -10,5 +10,7 @@
 ## DefaultState: Enabled
 ## LoadOnDemand: 0
 ## SavedVariables: TrainerSkillsDB,TrainerSkillsVar,TrainerSkillsTrainerTypes
+
+Locales\_Locales.xml
 TrainerSkills.xml
 TrainerSkillsConfig.xml
