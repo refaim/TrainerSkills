@@ -20,7 +20,7 @@ To get the trainerdata in the mod you only have to visit your trainers and it wi
 
 12.02.2006 Changes in version 2.1.5
 - If you visit one of the first class- or pettrainers with a shortened list of skills and later visit another trainer with a more complete list, the first one with be overwrited (works slightly differently behind the scene though so your other chatacters dont lose trainers)
-- Spanish translation made by Fili from spinebreaker / Escudo in Dentarg. If you want to use this you have to delete the localization.lua file and rename the localization.lua.spanish to localization.lua
+- Spanish translation made by Fili from spinebreaker / Escudo in Dentarg
 
 05.02.2006 Changes in version 2.1.4
 - Minor changes to make it compatible with DemonTrainerFrame

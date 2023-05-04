@@ -1,3 +1,4 @@
+if ( GetLocale() == "esES" ) then
 --Trainerskills by Razzer (http://wow.pchjaelp.dk)
 --spanish translation by Fili from spinebreaker / Escudo in Dentarg
 
@@ -115,3 +116,4 @@ TRAINERSKILLS_TITAN_MENU = "TrainerSkills (Right)";
 --Start added in version 2.1.3
 TRAINERSKILLS_DELETE_CHARACTER_BUTTON = "Delete the selected character";
 --end
+end
