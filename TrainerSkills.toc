@@ -1,7 +1,7 @@
 ## Interface: 11200
 ## Title: TrainerSkills
 ## Author: Razzer
-## Version: 2.1.6
+## Version: 2.1.7
 ## Notes: Shows the trainer frame from annywhere
 ## Notes-ruRU: Показывает окно учителя из любого места
 ## eMail: trainerskills@pchjaelp.dk
