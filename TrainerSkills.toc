@@ -1,7 +1,7 @@
-## Interface: 10900
+## Interface: 11200
 ## Title: TrainerSkills
 ## Author: Razzer
-## Version: 2.1.5
+## Version: 2.1.6
 ## Notes: Shows the trainer frame from annywhere
 ## eMail: trainerskills@pchjaelp.dk
 ## URL: http://wow.pchjaelp.dk

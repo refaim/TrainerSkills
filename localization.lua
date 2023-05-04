@@ -1,7 +1,7 @@
 --Trainerskills by Razzer (http://wow.pchjaelp.dk)
 --If you translate this pleace mail me a copy of this file and i'll put it up with the next version =)
 
-TRAINERSKILLS_VERSIONNUMBER = "2.1.5";
+TRAINERSKILLS_VERSIONNUMBER = "2.1.6";
 --Colors
 TRAINERSKILLS_GREEN_FONT_COLOR_CODE = "|cff00FF00";
 TRAINERSKILLS_FONT_COLOR_CODE_CLOSE = "|r";

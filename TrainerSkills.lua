@@ -293,6 +293,8 @@ end
 
 --Also called from DemonTrainerFrame
 function TrainerSkills_GetNpcNameAndZone()
+    TrainerSkillsTT:Hide();
+    TrainerSkillsTT:SetOwner(TrainerSkillsTT, "ANCHOR_NONE")
     TrainerSkillsTT:SetUnit("npc");
     index = TrainerSkillsTTTextLeft2:GetText();
     local subZoneText = GetSubZoneText();
@@ -346,22 +348,23 @@ end
 
 --Also used by DemonTrainerFrame
 function TrainerSkills_GetToolTipText(targetType, number)
+    TrainerSkillsTT:Hide();
+    TrainerSkillsTT:SetOwner(TrainerSkillsTT, "ANCHOR_NONE")
     if(targetType == "merchant")then
-        GameTooltip:SetMerchantItem(number);
+        TrainerSkillsTT:SetMerchantItem(number);
     elseif(targetType == "trainer")then
-        GameTooltip:SetTrainerService(number);
+        TrainerSkillsTT:SetTrainerService(number);
     end
 
-    local toolTipNumLines = GameTooltip:NumLines();
+    local toolTipNumLines = TrainerSkillsTT:NumLines();
     local toolTipLines = {};
 
     local j = 1;
     while (j <= toolTipNumLines) do
-        local mytext = getglobal("GameTooltipTextLeft" .. j);
+        local mytext = getglobal("TrainerSkillsTTTextLeft" .. j);
         toolTipLines[j] = mytext:GetText();
         j = j + 1;
     end
-    GameTooltip:Hide();
     return toolTipNumLines, toolTipLines
 end
 
@@ -1770,7 +1773,7 @@ function TrainerSkills_SetSelection(id)
             for skillType in ReagentData['crafted'][skillLine] do
                 if(skillType == serviceName) then
                     for key, value in ReagentData['crafted'][skillLine][skillType]['reagents'] do
-                        skillReagents = skillReagents..key..'('..value..') ';
+                        skillReagents = skillReagents..key..' ('..value..') ';
                     end
                     break;
                 end

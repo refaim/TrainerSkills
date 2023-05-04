@@ -1,7 +1,7 @@
 --Trainerskills by Razzer (http://wow.pchjaelp.dk)
 --spanish translation by Fili from spinebreaker / Escudo in Dentarg
 
-TRAINERSKILLS_VERSIONNUMBER = "2.1.5";
+TRAINERSKILLS_VERSIONNUMBER = "2.1.6";
 --Colors
 TRAINERSKILLS_GREEN_FONT_COLOR_CODE = "|cff00FF00";
 TRAINERSKILLS_FONT_COLOR_CODE_CLOSE = "|r";
