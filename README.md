@@ -15,6 +15,9 @@ For a list of all the slahscommands type /ts help
 To get the trainerdata in the mod you only have to visit your trainers and it will automatically update the database.
 
 ### Changelog
+04.05.2023 Changes in version 2.1.8
+- "Fix" annoying addon error message
+
 04.05.2023 Changes in version 2.1.7
 - Russian translation made by shikulja (https://github.com/shikulja)
 

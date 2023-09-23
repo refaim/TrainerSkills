@@ -709,67 +709,76 @@ function TrainerSkills_UpdateSkills()
         for index in mySkills do
             local upgrade = 1;
 
-            if (not trainerSkills[index] and index == "serviceType") then
-                mySkills[index] = nil;
-                return;
-            end
-
-            -- Level Requirements
-            local reqLevel = trainerSkills[index].GetTrainerServiceLevelReq;
-            local isPetLearnSpell = trainerSkills[index].ServiceLearnSpellIsPetLearnSpell;
-            if ( reqLevel > 1 ) then
-                if ( isPetLearnSpell ) then
-                    if ( UnitLevel("pet") < reqLevel ) then
-                        upgrade = nil;
-                    end
-                else
-                    if ( UnitLevel("player") < reqLevel ) then
-                        upgrade = nil;
-                    end
+            -- It is wrong way to "fix" index missing from trainerSkills
+            -- but error message is very annoying
+            -- and I do not have enough time to untangle logic of this function
+            if trainerSkills[index] ~= nil then
+                if (not trainerSkills[index] and index == "serviceType") then
+                    mySkills[index] = nil;
+                    return;
                 end
-            end
 
-            -- Skill Requirements
-            local skill, rank, hasReq;
-            skill = trainerSkills[index].SkillReqSkill;
-            rank = trainerSkills[index].SkillReqRank;
---          hasReq = mySkills[index].SkillReqHasReq;
+                if trainerSkills[index] ~= nil then
 
-            if ( skill ) then
-                if( myCraftSkills[skill] ) then
-                    if ( myCraftSkills[skill] >= rank ) then
-                        mySkills[index].SkillReqHasReq = 1;
+                end
+
+                -- Level Requirements
+                local reqLevel = trainerSkills[index].GetTrainerServiceLevelReq;
+                local isPetLearnSpell = trainerSkills[index].ServiceLearnSpellIsPetLearnSpell;
+                if ( reqLevel > 1 ) then
+                    if ( isPetLearnSpell ) then
+                        if ( UnitLevel("pet") < reqLevel ) then
+                            upgrade = nil;
+                        end
                     else
-                        upgrade = nil;
+                        if ( UnitLevel("player") < reqLevel ) then
+                            upgrade = nil;
+                        end
                     end
-                else
-                    upgrade = nil;
                 end
-            end
 
-            -- Ability Requirements
-            local numRequirements = trainerSkills[index].GetTrainerServiceNumAbilityReq;
-            if ( numRequirements and numRequirements > 0 ) then
-                local ServiceAbilityReq = mySkills[index].GetTrainerServiceAbilityReq;
-                for i=1, numRequirements, 1 do
-                    if (ServiceAbilityReq and ServiceAbilityReq[i]) then
-                        hasReq = ServiceAbilityReq[i].hasReq;
-                        if ( not hasReq ) then
+                -- Skill Requirements
+                local skill, rank, hasReq;
+                skill = trainerSkills[index].SkillReqSkill;
+                rank = trainerSkills[index].SkillReqRank;
+                --          hasReq = mySkills[index].SkillReqHasReq;
+
+                if ( skill ) then
+                    if( myCraftSkills[skill] ) then
+                        if ( myCraftSkills[skill] >= rank ) then
+                            mySkills[index].SkillReqHasReq = 1;
+                        else
                             upgrade = nil;
                         end
                     else
                         upgrade = nil;
                     end
                 end
-            end
 
-            if ( upgrade ) then
-                if ( mySkills[index].serviceType == "unavailable" ) then
-                    availableSkillsTotalCost = availableSkillsTotalCost + trainerSkills[index].moneyCost;
-                    mySkills[index].serviceType = "available";
-                    if ( TrainerSkillsVar.tsNotify == 1 ) then
-                        DEFAULT_CHAT_FRAME:AddMessage("TrainerSkills - "..TRAINERSKILLS_CHAT_NEW_LEARNABLE_SKILL.." "..GREEN_FONT_COLOR_CODE..trainerSkills[index].serviceName..FONT_COLOR_CODE_CLOSE.." "..TRAINERSKILLS_CHAT_NEW_LERANABLE_SKILL_FROM.." "..trainer);
-                        printAvailableSkillsTotalCost = 1;
+                -- Ability Requirements
+                local numRequirements = trainerSkills[index].GetTrainerServiceNumAbilityReq;
+                if ( numRequirements and numRequirements > 0 ) then
+                    local ServiceAbilityReq = mySkills[index].GetTrainerServiceAbilityReq;
+                    for i=1, numRequirements, 1 do
+                        if (ServiceAbilityReq and ServiceAbilityReq[i]) then
+                            hasReq = ServiceAbilityReq[i].hasReq;
+                            if ( not hasReq ) then
+                                upgrade = nil;
+                            end
+                        else
+                            upgrade = nil;
+                        end
+                    end
+                end
+
+                if ( upgrade ) then
+                    if ( mySkills[index].serviceType == "unavailable" ) then
+                        availableSkillsTotalCost = availableSkillsTotalCost + trainerSkills[index].moneyCost;
+                        mySkills[index].serviceType = "available";
+                        if ( TrainerSkillsVar.tsNotify == 1 ) then
+                            DEFAULT_CHAT_FRAME:AddMessage("TrainerSkills - "..TRAINERSKILLS_CHAT_NEW_LEARNABLE_SKILL.." "..GREEN_FONT_COLOR_CODE..trainerSkills[index].serviceName..FONT_COLOR_CODE_CLOSE.." "..TRAINERSKILLS_CHAT_NEW_LERANABLE_SKILL_FROM.." "..trainer);
+                            printAvailableSkillsTotalCost = 1;
+                        end
                     end
                 end
             end
