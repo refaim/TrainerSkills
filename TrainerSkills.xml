@@ -864,13 +864,6 @@
         <PushedTexture file="Interface\AddOns\TrainerSkills\Images\Button_Down.tga"/>
         <HighlightTexture alphaMode="ADD" file="Interface\Minimap\UI-Minimap-ZoomButton-Highlight"/>
     </Button>
-    <Frame name="TrainerSkillsTimer" frameStrata="LOW" enableMouse="false" hidden="true">
-        <Scripts>
-            <OnUpdate>
-                TrainerSkillsTimer_OnUpdate(arg1);
-            </OnUpdate>
-        </Scripts>
-    </Frame>
     <Frame parent="UIParent" hide="true">
     <Frames>
       <Button name="TitanPanelTrainerSkillsButton" inherits="TitanPanelIconTemplate" frameStrata="FULLSCREEN" toplevel="true">

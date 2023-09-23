@@ -1,7 +1,6 @@
 --TrainerSkills made by Razzer (http://wow.pchjaelp.dk)
 CLASS_TRAINER_SKILLS_DISPLAYED = 11;
 CLASS_TRAINER_SKILL_HEIGHT = 16;
-TRINER_SKILLS_DEBUG = nil;
 
 local selectedNpc;
 local skills;
@@ -89,39 +88,6 @@ function TrainerSkills_OnLoad()
     UIPanelWindows["TrainerSkills"] = { area = "left", pushable = 6 };
 end
 
-local timedTasks = {};
-local function timeTask(task, delay)
-    for index in timedTasks do
-        if(timedTasks[index].task == task)then
-            return;
-        end
-    end
-    tinsert(timedTasks, {task = task, delay = delay, countedTime = 0});
-    TrainerSkillsTimer:Show();
-end
-
-local timeCounter = 0;
-local taskTimeCounter;
-function TrainerSkillsTimer_OnUpdate(arg1)
-    timeCounter = timeCounter + arg1;
-    if(timeCounter >= 1)then
-        taskTimeCounter = timeCounter;
-        timeCounter = 0;
-        if(getn(timedTasks) > 0)then
-            for task in timedTasks do
-                timedTasks[task].countedTime = timedTasks[task].countedTime + taskTimeCounter;
-                if(timedTasks[task].countedTime >= timedTasks[task].delay)then
-                    local tempTask = timedTasks[task].task;
-                    tremove(timedTasks, task);
-                    tempTask();
-                end
-            end
-        else
-            TrainerSkillsTimer:Hide();
-        end
-    end
-end
-
 function TrainerSkills_OnEvent(event)
     if ( event == "VARIABLES_LOADED" ) then
         if(myAddOnsFrame) then
@@ -138,12 +104,10 @@ function TrainerSkills_OnEvent(event)
     elseif ( event == "TRAINER_SHOW" ) then
         if ( not IsTalentTrainer() ) then
             TrainerSkills_Grab_init();
---          timeTask(TrainerSkills_Grab, 1);
         end
     elseif ( event == "TRAINER_CLOSED" ) then
         if ( not IsTalentTrainer() ) then
             TrainerSkills_Grab();
---          timeTask(TrainerSkills_Grab, 3);
         end
     elseif (event == "PLAYER_ENTERING_WORLD") then
         if (not charIndex) then
@@ -414,7 +378,6 @@ function TrainerSkills_Grab()
 
             serviceName, serviceSubText, serviceType, isExpanded = GetTrainerServiceInfo(i);
             if(not serviceName or not serviceType)then
---              timeTask(TrainerSkills_Grab, 1);
                 return;
             end
 
@@ -489,9 +452,6 @@ local function cleanTrainerTypesTable()
             end
         end
         if(not found) then
-            if(TRINER_SKILLS_DEBUG)then
-                DEFAULT_CHAT_FRAME:AddMessage("TrainerSkills: Deleting unused trainer from the trainerTypes table: "..trainer);
-            end
             TrainerSkillsTrainerTypes[trainer] = nil;
         end
     end
@@ -600,9 +560,6 @@ function TrainerSkills_GetTrainerTypeWithSameSkills(saveSkills, numTrainerServic
         local oldSkills = TrainerSkillsTrainerTypes[trainerType].skills;
         local oSize = getn(oldSkills);
         if ( saveSkills[1].serviceName == oldSkills[1].serviceName ) then
-            if(TRINER_SKILLS_DEBUG)then
-                DEFAULT_CHAT_FRAME:AddMessage("Same hader found");
-            end
             local found = nil;
             for oSkill in oldSkills do
                 if ( saveSkills[numTrainerServices].serviceName == oldSkills[oSkill].serviceName ) then
@@ -610,9 +567,6 @@ function TrainerSkills_GetTrainerTypeWithSameSkills(saveSkills, numTrainerServic
                 end
             end
             if ( found ) then
-                if(TRINER_SKILLS_DEBUG)then
-                    DEFAULT_CHAT_FRAME:AddMessage("Last skill found");
-                end
                 for sSkill in saveSkills do
                     if ( oldSkills[oSize].serviceName == saveSkills[sSkill].serviceName ) then
                         return trainerType;
@@ -632,21 +586,11 @@ function TrainerSkills_GetTrainerTypeWithSameSkills(saveSkills, numTrainerServic
                     end
                 end
 
-                if(TRINER_SKILLS_DEBUG)then
-                    DEFAULT_CHAT_FRAME:AddMessage("knownSkills: "..knownSkills.." numTrainerServices: "..numTrainerServices.." oSize: "..oSize);
-                end
-
                 if(knownSkills == numTrainerServices)then
                     --hvis alle saveSkills findes i oldSkills så return -1 der bliver alligevel kørt update greys
-                    if(TRINER_SKILLS_DEBUG)then
-                        DEFAULT_CHAT_FRAME:AddMessage("Ignoring"..trainerType);
-                    end
                     ignore = 1;
                 elseif(knownSkills == oSize)then
                     --hvis alle oldSkills findes i saveSkills så fjern link til den træner (fordi vi besøger en af samme type med flere skills)
-                    if(TRINER_SKILLS_DEBUG)then
-                        DEFAULT_CHAT_FRAME:AddMessage("Removing link to old trainer"..trainerType);
-                    end
                     TrainerSkillsDB[charIndex][trainerType] = nil;
                     doClean = 1;
                 end
@@ -750,16 +694,10 @@ function TrainerSkills_UpdateSkills()
     end
 
     for trainer in TrainerSkillsDB[charIndex] do
-        if (TRINER_SKILLS_DEBUG) then
-            DEFAULT_CHAT_FRAME:AddMessage("TrainerSkills: UpdateSkills - Trainer:"..trainer);
-        end
         local printAvailableSkillsTotalCost = nil;
         if(not TrainerSkillsTrainerTypes[trainer])then
             for trainer in TrainerSkillsDB[charIndex] do
                 if(not TrainerSkillsTrainerTypes[trainer])then
-                    if (TRINER_SKILLS_DEBUG) then
-                        DEFAULT_CHAT_FRAME:AddMessage("TrainerSkills: Deleting trainer because he is missing in the trainer types table: "..trainer);
-                    end
                     TrainerSkillsDB[charIndex][trainer] = nil;
                 end
             end
@@ -770,11 +708,6 @@ function TrainerSkills_UpdateSkills()
         availableSkillsTotalCost = 0;
         for index in mySkills do
             local upgrade = 1;
-
-            if (TRINER_SKILLS_DEBUG and not trainerSkills[index]) then
-
-                DEFAULT_CHAT_FRAME:AddMessage("TrainerSkills: UpdateSkills - Trainer:"..trainer.." missing at TrainerSkillsTrainerTypes[trainer][skills][\""..index.."\"]");
-            end
 
             if (not trainerSkills[index] and index == "serviceType") then
                 mySkills[index] = nil;
@@ -1021,10 +954,6 @@ function TrainerSkills_ConvertToNewDataStructure()
                     end
                 end
 
-                if (TRINER_SKILLS_DEBUG) then
-                    DEFAULT_CHAT_FRAME:AddMessage("TrainerSkills: Trainer:"..trainer.."char:"..char);
-                end
-
                 if ( cSkills ) then
                     TrainerSkillsTrainerTypes[trainer].skills = {};
                     for cSkill in cSkills do
@@ -1230,9 +1159,6 @@ function TrainerSkillsNpcDropDown_Initialize()
     for index in TrainerSkillsDB[selectedChar] do
         if(not TrainerSkillsTrainerTypes[index]) then
             TrainerSkillsDB[selectedChar][index] = nil;
-            if(TRINER_SKILLS_DEBUG)then
-                DEFAULT_CHAT_FRAME:AddMessage("TrainerSkills: Deleted "..index.." from "..selectedChar.." because of missing data in the trainerTypes table");
-            end
         else
             info = {};
             if (TrainerSkillsTrainerTypes[index].IsTradeskillTrainer) then
@@ -1717,17 +1643,7 @@ function TrainerSkills_SetSelection(id)
             separator = ", ";
         end
     end
-    -- Step Requirements. This is some really wird stuff - maybe leftovers from very old code. The data saved in ReqStep is totally useless.
---  local step, met;
---  step = skills[id].ServiceStepReqStep;
---  met = skills[id].ServiceStepReqMet;
---  if ( step ) then
---      if ( met ) then
---          requirements = requirements..separator..format(TEXT(TRAINER_REQ_ABILITY), step );
---      else
---          requirements = requirements..separator..format(TEXT(TRAINER_REQ_ABILITY_RED), step );
---      end
---  end
+
     if ( requirements ~= "" ) then
         TrainerSkillsSkillRequirements:SetText(REQUIRES_LABEL.." "..requirements);
     else
@@ -1754,11 +1670,6 @@ function TrainerSkills_SetSelection(id)
 
     MoneyFrame_Update("TrainerSkillsDetailMoneyFrame", moneyCost);
 
---  if ( skills[id].GetTrainerServiceDescription ) then
---      TrainerSkillsSkillDescription:SetText( skills[id].GetTrainerServiceDescription );
---  else
---      TrainerSkillsSkillDescription:SetText("");
---  end
     -- Determine what type of spell to display
     if ( isLearnSpell ) then
         if ( isPetLearnSpell ) then
@@ -2046,9 +1957,6 @@ function TrainerSkills_Create_TitanToolTip()
     for trainer in TrainerSkillsDB[charIndex] do
         if(not TrainerSkillsTrainerTypes[trainer]) then
             TrainerSkillsDB[charIndex][trainer] = nil;
-            if(TRINER_SKILLS_DEBUG)then
-                DEFAULT_CHAT_FRAME:AddMessage("TrainerSkills: Deleted "..trainer.." from "..charIndex.." because of missing data in the trainerTypes table");
-            end
         else
             local first = 1;
             local mySkills = TrainerSkillsDB[charIndex][trainer].skills;
