@@ -8,6 +8,7 @@ local skillsData;
 local selectedService;
 local skillsFilter = {available = 1, unavailable = 1, used = nil};
 local index;
+---@type string|nil
 local charIndex;
 local selectedChar;
 local showSkillDetails;
@@ -216,7 +217,7 @@ function TrainerSkills_InitDB()
         TrainerSkillsDB = {};
     end
 
-    if( not TrainerSkillsDB[charIndex] ) then
+    if( TrainerSkillsDB[charIndex] ) then
         TrainerSkillsDB[charIndex] = {};
     end
 
@@ -660,63 +661,84 @@ function TrainerSkills_MoneyFormat(money)
         return gold, silver, copper;
 end
 
+local function trySavePlayerCraftSkills()
+    if TrainerSkillsVar.savePlayerSkills ~= 1 then
+        return
+    end
+
+    local numberOfSkillLines = GetNumSkillLines()
+    local craftSkills = {
+        ['numSkills'] = numberOfSkillLines,
+        ['charLevel'] = UnitLevel('player'),
+    }
+
+    for skillIndex = 1, GetNumSkillLines() do
+        local skillName, isHeader, _, skillRank = GetSkillLineInfo(skillIndex)
+        if isHeader and (skillName == TRADE_SKILLS or skillName == SECONDARY_SKILLS) then
+            craftSkills[skillIndex] = {
+                ['skillName'] = skillName,
+                ['skillRank'] = skillRank,
+            }
+        end
+    end
+
+    TrainerSkillsVar[charIndex].mySavedCraftSkills = craftSkills;
+end
+
+local function getPlayerCraftSkills()
+    ---@type table<string, number>
+    local craftSkills = {}
+    for skillIndex = 1, GetNumSkillLines() do
+        local skillName, isHeader, _, skillRank = GetSkillLineInfo(skillIndex)
+        if skillName ~= nil and not isHeader then
+            craftSkills[skillName] = skillRank
+        end
+    end
+end
+
 function TrainerSkills_UpdateSkills()
-    local numSkills = GetNumSkillLines();
-    local skillHeader = nil;
-    local myCraftSkills = {};
-    local mySavedCraftSkills;
-    if ( TrainerSkillsVar.savePlayerSkills == 1 ) then
-        mySavedCraftSkills = {};
-        mySavedCraftSkills.numSkills = numSkills;
-        mySavedCraftSkills.charLevel = UnitLevel("player");
-    end
+    trySavePlayerCraftSkills()
 
-    for i = 1, numSkills, 1 do
-        local skillName, header, isExpanded, skillRank, numTempPoints, skillModifier, skillMaxRank, isAbandonable, stepCost, rankCost, minLevel, skillCostType = GetSkillLineInfo(i);
-
-        if ( not header and skillName ) then
-            myCraftSkills[skillName] = skillRank;
-        end
-
-        if ( header ) then
-            skillHeader = skillName;
-        end
-
-        if ( TrainerSkillsVar.savePlayerSkills == 1 and (skillHeader == TRADE_SKILLS or skillHeader == SECONDARY_SKILLS ) ) then
-            mySavedCraftSkills[i] = {};
-            mySavedCraftSkills[i].skillRank = skillRank;
-            mySavedCraftSkills[i].skillName = skillName;
-        end
-    end
-
-    if ( TrainerSkillsVar.savePlayerSkills == 1 ) then
-        TrainerSkillsVar[charIndex].mySavedCraftSkills = mySavedCraftSkills;
-    end
-
-    for trainer in TrainerSkillsDB[charIndex] do
-        local printAvailableSkillsTotalCost = nil;
-        if(not TrainerSkillsTrainerTypes[trainer])then
-            for trainer in TrainerSkillsDB[charIndex] do
-                if(not TrainerSkillsTrainerTypes[trainer])then
-                    TrainerSkillsDB[charIndex][trainer] = nil;
+    local trainersToRemoveFromDatabase = {}
+    for trainer, playerData in pairs(TrainerSkillsDB[charIndex]) do
+        local trainerData = TrainerSkillsTrainerTypes[trainer]
+        if trainerData == nil then
+            tinsert(trainersToRemoveFromDatabase, trainer)
+        else
+            local playerSkills = playerData.skills
+            local trainerSkills = trainerData.skills
+            for skillIndex, playerSkillData in pairs(playerSkills) do
+                local trainerSkillData = trainerSkills[skillIndex]
+                if trainerSkillData == nil then
+                    // ???
                 end
             end
-            return;
         end
+    end
+    for _, trainer in ipairs(trainersToRemoveFromDatabase) do
+        TrainerSkillsDB[charIndex][trainer] = nil
+    end
+
+
+
+    local printAvailableSkillsTotalCost = false
+    local myCraftSkills = getPlayerCraftSkills()
+    for trainer in TrainerSkillsDB[charIndex] do
+        availableSkillsTotalCost = 0;
+
         local trainerSkills = TrainerSkillsTrainerTypes[trainer].skills;
         local mySkills = TrainerSkillsDB[charIndex][trainer].skills;
-        availableSkillsTotalCost = 0;
-        for index in mySkills do
+        for mySkillIndex in mySkills do
             local upgrade = 1;
 
-            if (not trainerSkills[index] and index == "serviceType") then
-                mySkills[index] = nil;
+            if (not trainerSkills[mySkillIndex] and mySkillIndex == "serviceType") then
+                mySkills[mySkillIndex] = nil;
                 return;
             end
 
             -- Level Requirements
-            local reqLevel = trainerSkills[index].GetTrainerServiceLevelReq;
-            local isPetLearnSpell = trainerSkills[index].ServiceLearnSpellIsPetLearnSpell;
+            local reqLevel = trainerSkills[mySkillIndex].GetTrainerServiceLevelReq;
+            local isPetLearnSpell = trainerSkills[mySkillIndex].ServiceLearnSpellIsPetLearnSpell;
             if ( reqLevel > 1 ) then
                 if ( isPetLearnSpell ) then
                     if ( UnitLevel("pet") < reqLevel ) then
@@ -731,14 +753,14 @@ function TrainerSkills_UpdateSkills()
 
             -- Skill Requirements
             local skill, rank, hasReq;
-            skill = trainerSkills[index].SkillReqSkill;
-            rank = trainerSkills[index].SkillReqRank;
+            skill = trainerSkills[mySkillIndex].SkillReqSkill;
+            rank = trainerSkills[mySkillIndex].SkillReqRank;
 --          hasReq = mySkills[index].SkillReqHasReq;
 
             if ( skill ) then
                 if( myCraftSkills[skill] ) then
                     if ( myCraftSkills[skill] >= rank ) then
-                        mySkills[index].SkillReqHasReq = 1;
+                        mySkills[mySkillIndex].SkillReqHasReq = 1;
                     else
                         upgrade = nil;
                     end
@@ -748,9 +770,9 @@ function TrainerSkills_UpdateSkills()
             end
 
             -- Ability Requirements
-            local numRequirements = trainerSkills[index].GetTrainerServiceNumAbilityReq;
+            local numRequirements = trainerSkills[mySkillIndex].GetTrainerServiceNumAbilityReq;
             if ( numRequirements and numRequirements > 0 ) then
-                local ServiceAbilityReq = mySkills[index].GetTrainerServiceAbilityReq;
+                local ServiceAbilityReq = mySkills[mySkillIndex].GetTrainerServiceAbilityReq;
                 for i=1, numRequirements, 1 do
                     if (ServiceAbilityReq and ServiceAbilityReq[i]) then
                         hasReq = ServiceAbilityReq[i].hasReq;
@@ -764,19 +786,20 @@ function TrainerSkills_UpdateSkills()
             end
 
             if ( upgrade ) then
-                if ( mySkills[index].serviceType == "unavailable" ) then
-                    availableSkillsTotalCost = availableSkillsTotalCost + trainerSkills[index].moneyCost;
-                    mySkills[index].serviceType = "available";
+                if ( mySkills[mySkillIndex].serviceType == "unavailable" ) then
+                    availableSkillsTotalCost = availableSkillsTotalCost + trainerSkills[mySkillIndex].moneyCost;
+                    mySkills[mySkillIndex].serviceType = "available";
                     if ( TrainerSkillsVar.tsNotify == 1 ) then
-                        DEFAULT_CHAT_FRAME:AddMessage("TrainerSkills - "..TRAINERSKILLS_CHAT_NEW_LEARNABLE_SKILL.." "..GREEN_FONT_COLOR_CODE..trainerSkills[index].serviceName..FONT_COLOR_CODE_CLOSE.." "..TRAINERSKILLS_CHAT_NEW_LERANABLE_SKILL_FROM.." "..trainer);
-                        printAvailableSkillsTotalCost = 1;
+                        DEFAULT_CHAT_FRAME:AddMessage("TrainerSkills - "..TRAINERSKILLS_CHAT_NEW_LEARNABLE_SKILL.." "..GREEN_FONT_COLOR_CODE..trainerSkills[mySkillIndex].serviceName..FONT_COLOR_CODE_CLOSE.." "..TRAINERSKILLS_CHAT_NEW_LERANABLE_SKILL_FROM.." "..trainer);
+                        printAvailableSkillsTotalCost = true;
                     end
                 end
             end
         end
-        if(printAvailableSkillsTotalCost) then
+
+        if printAvailableSkillsTotalCost then
             local gold, silver, copper = TrainerSkills_MoneyFormat(availableSkillsTotalCost);
-            if(GetMoney() >= availableSkillsTotalCost) then
+            if GetMoney() >= availableSkillsTotalCost then
                 DEFAULT_CHAT_FRAME:AddMessage(TRAINERSKILLS_CHAT_TOTAL_TRAIN_COST.." "..GREEN_FONT_COLOR_CODE..gold.."g "..silver.."s "..copper.."c"..FONT_COLOR_CODE_CLOSE.." ("..TRAINERSKILLS_CHAT_TOTAL_TRAIN_COST_EXPLANATION..")");
             else
                 DEFAULT_CHAT_FRAME:AddMessage(TRAINERSKILLS_CHAT_TOTAL_TRAIN_COST.." "..RED_FONT_COLOR_CODE..gold.."g "..silver.."s "..copper.."c"..FONT_COLOR_CODE_CLOSE.." ("..TRAINERSKILLS_CHAT_TOTAL_TRAIN_COST_EXPLANATION..")");
@@ -784,6 +807,7 @@ function TrainerSkills_UpdateSkills()
             updateTitan = 1;
         end
     end
+
     if ( selectedNpc and selectedChar and charIndex == selectedChar ) then
         TrainerSkills_Update();
     end
